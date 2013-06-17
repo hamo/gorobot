@@ -1,0 +1,13 @@
+conn:
+  server: irc.freenode.net
+  port:   6697
+  ssl:    true
+  nick:   gorobot_hamo
+  user:   gorobot
+  realname: gorobot
+  
+
+
+channels:
+  - name: ubuntu-cn
+  - name: bot
