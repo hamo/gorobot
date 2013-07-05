@@ -1,4 +1,4 @@
-package irc
+package conn
 
 import (
 	"crypto/tls"
