@@ -7,13 +7,14 @@ import (
 	"runtime"
 	"strings"
 	"utils"
-	
-	conn "irc/conn"
+
+	"irc/conn"
 )
 
 var (
 	confDir = flag.String("config", "conf", "config dir")
 	debug   = flag.Bool("debug", true, "debug switch")
+	threadNum  = flag.Int("threadNum", runtime.NumCPU()+1, "thread number")
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 
 func main() {
 
-	runtime.GOMAXPROCS(runtime.NumCPU() + 1)
+	runtime.GOMAXPROCS(*threadNum)
 	flag.Parse()
 
 	confs, err := utils.AllFilesUnderDir(*confDir)
@@ -74,6 +75,12 @@ func main() {
 	}
 
 	for {
-		runtime.Gosched()
+		for _, c := range connSlice {
+			select {
+			case err := <-c.Error:
+				panic(err.Err)
+			default:
+			}
+		}
 	}
 }

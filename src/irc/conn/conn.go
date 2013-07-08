@@ -3,18 +3,16 @@ package conn
 import (
 	"crypto/tls"
 	"net/textproto"
-	//	"os"
-	//	"os/user"
+	"fmt"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
-	"fmt"
 
 	"conf"
-	"irc/proto"
 	"irc/action"
 	"irc/plugin"
+	"irc/proto"
 )
 
 const (
@@ -28,13 +26,9 @@ type Connection struct {
 
 	ServerHost string // server host name
 
-	//	user      string
 	//	host      string
-	//	realname  string
-	//	UseTLS    bool
 	TLSConfig *tls.Config
 
-	//	nick        string
 	CurrentNick string
 
 	//	Auth     int
@@ -58,15 +52,15 @@ type Connection struct {
 	syncPing   chan bool
 	syncAction chan bool
 
-	//	Error chan WorkerError
+	Error chan ConnError
 }
 
-// type WorkerError struct {
-// 	from string
-// 	work string
-// 	err  error
-// 	//	arg string
-// }
+type ConnError struct {
+	from string
+	Err  error
+	Debug string
+	Recoverable bool
+}
 
 func NewConn(ca *conf.ConfStruct) (conn *Connection, err error) {
 	conn = new(Connection)
@@ -157,7 +151,7 @@ func (conn *Connection) Connect() (err error) {
 
 func (conn *Connection) initConn() {
 	conn.CurrentNick = conn.conf.Nick
-	
+
 	conn.pwrite = make(chan string, 64)
 	conn.pread = make(chan *proto.Message, 64)
 
@@ -166,7 +160,7 @@ func (conn *Connection) initConn() {
 	conn.syncPing = make(chan bool)
 	conn.syncAction = make(chan bool)
 
-	// conn.Error = make(chan WorkerError)
+	conn.Error = make(chan ConnError)
 
 	conn.pingTicker = time.NewTicker(15 * time.Minute)
 }
@@ -180,7 +174,7 @@ func (conn *Connection) closeConn() {
 	close(conn.syncPing)
 	close(conn.syncAction)
 
-	// close(conn.Error)
+	close(conn.Error)
 
 	conn.pingTicker.Stop()
 }
@@ -238,7 +232,7 @@ func (conn *Connection) ReadLoop() {
 		// 	}
 		default:
 			if s, err := conn.Socket.Reader.ReadLine(); err != nil {
-				//				conn.Error <- WorkerError{"Reader", "Read Socket", err}
+				conn.Error <- ConnError{"ReadLoop", err, "", false}
 			} else {
 				if msg, err := proto.Parse(s); err != nil {
 					// 	conn.Error <- WorkerError{"Reader", "Parse message", err}
@@ -314,7 +308,6 @@ func (conn *Connection) ActionLoop() {
 		}
 	}
 }
-
 
 func (conn *Connection) Join(channel string) {
 	conn.pwrite <- fmt.Sprintf("JOIN %s", channel)

@@ -33,6 +33,6 @@ func Action(msg *proto.Message, conn irc.ConnInterface) {
 	case "NOTICE":
 		fallthrough
 	default:
-		fmt.Printf("%+v\n", msg)
 	}
+	fmt.Printf("%+v\n", msg)
 }
