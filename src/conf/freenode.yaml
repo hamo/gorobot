@@ -5,9 +5,11 @@ conn:
   nick:   gorobot_hamo
   user:   gorobot
   realname: gorobot
-  
-
 
 channels:
   - name: ubuntu-cn
   - name: bot
+
+plugins:
+  - name: admin
+  - name: plugin

@@ -1,3 +1,5 @@
+//http://www.networksorcery.com/enp/protocol/irc.htm
+
 package proto
 
 import (
@@ -62,4 +64,3 @@ func Parse(line string) (msg *Message, e error) {
 	/* XXX: len(args) == 0: args should be empty */
 	return msg, nil
 }
-

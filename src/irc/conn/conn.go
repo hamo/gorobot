@@ -2,8 +2,8 @@ package conn
 
 import (
 	"crypto/tls"
-	"net/textproto"
 	"fmt"
+	"net/textproto"
 	"runtime"
 	"strconv"
 	"strings"
@@ -44,6 +44,7 @@ type Connection struct {
 	//	output, debug *log.Logger
 
 	pingTicker *time.Ticker
+	lastAlive  time.Time
 
 	syncing    bool
 	quiting    bool
@@ -52,13 +53,15 @@ type Connection struct {
 	syncPing   chan bool
 	syncAction chan bool
 
+	Plugins []plugin.PluginInterface
+
 	Error chan ConnError
 }
 
 type ConnError struct {
-	from string
-	Err  error
-	Debug string
+	From        string
+	Err         error
+	Debug       string
 	Recoverable bool
 }
 
@@ -126,6 +129,19 @@ func NewConn(ca *conf.ConfStruct) (conn *Connection, err error) {
 	// 	return nil, err
 	// }
 	// conn.ChanMap = cm
+
+	// Parse plugins
+	for _, raw := range ca.Plugins {
+		fmt.Printf("%+v\n", raw)
+		name := raw["name"].(string)
+		println("one plugin")
+		if v, ok := plugin.PluginMap[name]; ok {
+			println("got one plugin")
+			re := v(raw)
+			conn.Plugins = append(conn.Plugins, re)
+		}
+	}
+
 	return conn, nil
 }
 
@@ -162,7 +178,7 @@ func (conn *Connection) initConn() {
 
 	conn.Error = make(chan ConnError)
 
-	conn.pingTicker = time.NewTicker(15 * time.Minute)
+	conn.pingTicker = time.NewTicker(5 * time.Minute)
 }
 
 func (conn *Connection) closeConn() {
@@ -216,6 +232,10 @@ func (conn *Connection) GetCurrentNick() string {
 
 func (conn *Connection) SetCurrentNick(nick string) {
 	conn.CurrentNick = nick
+}
+
+func (conn *Connection) SetLastAlive(t time.Time) {
+	conn.lastAlive = t
 }
 
 func (conn *Connection) ReadLoop() {
@@ -302,7 +322,9 @@ func (conn *Connection) ActionLoop() {
 			}
 		case msg := <-conn.pread:
 			go action.Action(msg, conn)
-			go plugin.Action(msg, conn)
+			for _, v := range conn.Plugins {
+				go v.Action(msg, conn)
+			}
 		default:
 			runtime.Gosched()
 		}

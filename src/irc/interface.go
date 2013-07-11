@@ -1,13 +1,11 @@
 package irc
 
 import (
+	"time"
 )
 
 type ConnInterface interface {
 	Connect() (err error)
-
-//	initConn()
-//	closeConn()
 
 	ActionLoop()
 
@@ -19,6 +17,8 @@ type ConnInterface interface {
 	GetCurrentNick() string
 
 	SetCurrentNick(nick string)
+
+	SetLastAlive(time.Time)
 
 	//proto
 	Join(channel string)

@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	confDir = flag.String("config", "conf", "config dir")
-	debug   = flag.Bool("debug", true, "debug switch")
-	threadNum  = flag.Int("threadNum", runtime.NumCPU()+1, "thread number")
+	confDir   = flag.String("config", "conf", "config dir")
+	debug     = flag.Bool("debug", true, "debug switch")
+	threadNum = flag.Int("threadNum", runtime.NumCPU()+1, "thread number")
 )
 
 var (
@@ -66,11 +66,13 @@ func main() {
 	}
 
 	for _, c := range connSlice {
+		println("Start connect to server")
 		err = c.Connect()
 		if err != nil {
 			continue
 		}
 
+		println("Post connect to server")
 		go c.PostConnect()
 	}
 

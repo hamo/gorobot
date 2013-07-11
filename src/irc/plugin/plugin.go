@@ -3,24 +3,12 @@ package plugin
 import (
 	"irc"
 	"irc/proto"
-	"strings"
 )
 
+var PluginMap map[string]PluginParser = make(map[string]PluginParser)
 
-func Action(msg *proto.Message, conn irc.ConnInterface) {
-	if strings.Contains(msg.Content, "test") {
-		conn.Privmsg("#ubuntu-cn", "test failed.")
-	}
+type PluginInterface interface {
+	Action(*proto.Message, irc.ConnInterface)
 }
-	
 
-
-
-
-
-
-
-
-
-
-
+type PluginParser func(map[interface{}]interface{}) PluginInterface

@@ -1,9 +1,10 @@
 package action
 
 import (
-	"irc/proto"
-	"irc"
 	"fmt"
+	"irc"
+	"irc/proto"
+	"time"
 )
 
 func Action(msg *proto.Message, conn irc.ConnInterface) {
@@ -16,6 +17,7 @@ func Action(msg *proto.Message, conn irc.ConnInterface) {
 		}
 	case "PING":
 		conn.Pong(msg.Content)
+		conn.SetLastAlive(time.Now())
 	// case "PRIVMSG":
 	// 	for _, v := range msg.Arguments {
 	// 		if strings.HasPrefix(v, "#") {
@@ -30,6 +32,7 @@ func Action(msg *proto.Message, conn irc.ConnInterface) {
 	// 	}
 	case "PONG":
 		conn.SetServerHost(msg.Arguments[0])
+		conn.SetLastAlive(time.Now())
 	case "NOTICE":
 		fallthrough
 	default:

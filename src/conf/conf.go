@@ -18,6 +18,7 @@ type ConfStruct struct {
 	Filename string
 	Conn     *ConnConf
 	Channels []channelConf
+	Plugins  []map[interface{}]interface{}
 }
 
 type ConnConf struct {
@@ -81,6 +82,9 @@ func parseContent(raw map[interface{}]interface{}) (*ConfStruct, error) {
 				return nil, err
 			}
 			cs.Channels = cc
+		case "plugins":
+			r := v.([]interface{})
+			cs.Plugins = parsePlugins(r)
 		}
 	}
 	return cs, nil
@@ -154,4 +158,12 @@ func parseOneChannel(raw map[interface{}]interface{}) (channelConf, error) {
 		}
 	}
 	return cc, nil
+}
+
+func parsePlugins(raw []interface{}) []map[interface{}]interface{} {
+	var r []map[interface{}]interface{}
+	for _, v := range raw {
+		r = append(r, v.(map[interface{}]interface{}))
+	}
+	return r
 }

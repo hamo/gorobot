@@ -1,9 +1,9 @@
 package conf
 
 import (
-	"testing"
-	"path/filepath"
 	"fmt"
+	"path/filepath"
+	"testing"
 )
 
 func TestParseFile(t *testing.T) {
@@ -14,19 +14,7 @@ func TestParseFile(t *testing.T) {
 	}
 
 	fmt.Printf("%#+v\n", cs)
-	
+
 	fmt.Printf("%#+v\n", cs.Conn)
 	fmt.Printf("%#+v\n", cs.Channels)
 }
-
-
-
-
-
-
-
-
-
-
-
-
