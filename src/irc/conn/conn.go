@@ -55,6 +55,8 @@ type Connection struct {
 
 	Plugins []plugin.PluginInterface
 
+	Channels []conf.ChannelConf
+
 	Error chan ConnError
 }
 
@@ -142,6 +144,9 @@ func NewConn(ca *conf.ConfStruct) (conn *Connection, err error) {
 		}
 	}
 
+	// Parse Channels
+	conn.Channels = ca.Channels
+
 	return conn, nil
 }
 
@@ -215,7 +220,9 @@ func (conn *Connection) PostConnect() {
 	// 	conn.Join(k)
 	// }
 	// conn.ChanMap.RUnlock()
-	conn.Join("#ubuntu-cn")
+	for _, v := range conn.Channels {
+		conn.Join(v.Name)
+	}
 }
 
 func (conn *Connection) Close() (err error) {

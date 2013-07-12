@@ -3,9 +3,12 @@ package plugin
 import (
 	"irc"
 	"irc/proto"
+
+	"utils"
 )
 
 type adminStruct struct {
+	adminNicks []string
 }
 
 func init() {
@@ -18,14 +21,26 @@ func init() {
 
 func adminParser(raw map[interface{}]interface{}) PluginInterface {
 	var admin adminStruct
+
+	if v, ok := raw["admins"]; ok {
+		raw := v.([]interface{})
+		for _, nick := range raw {
+			admin.adminNicks = append(admin.adminNicks, nick.(string))
+		}
+	}
+	
 	return &admin
 }
 
-func (*adminStruct) Action(msg *proto.Message, conn irc.ConnInterface) {
+func (as *adminStruct) Action(msg *proto.Message, conn irc.ConnInterface) {
 	switch msg.Code {
 	case "PRIVMSG":
 		if msg.Arguments[0] == conn.GetCurrentNick() {
-			conn.Privmsg("#ubuntu-cn", msg.Content)
+			if utils.StringInSlice(msg.Nick, as.adminNicks) {
+				conn.Privmsg("#gorobot", msg.Content)
+			} else {
+				conn.Privmsg(msg.Nick, "你不是我主人,你是坏人!")
+			}
 		}
 	default:
 	}

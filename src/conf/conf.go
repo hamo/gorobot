@@ -17,7 +17,7 @@ const (
 type ConfStruct struct {
 	Filename string
 	Conn     *ConnConf
-	Channels []channelConf
+	Channels []ChannelConf
 	Plugins  []map[interface{}]interface{}
 }
 
@@ -30,7 +30,7 @@ type ConnConf struct {
 	Realname string
 }
 
-type channelConf struct {
+type ChannelConf struct {
 	Name string
 }
 
@@ -132,8 +132,8 @@ func parseConn(raw map[interface{}]interface{}) (*ConnConf, error) {
 	return cc, nil
 }
 
-func parseChannels(raw []interface{}, name string) ([]channelConf, error) {
-	ccs := make([]channelConf, 0, 5)
+func parseChannels(raw []interface{}, name string) ([]ChannelConf, error) {
+	ccs := make([]ChannelConf, 0, 5)
 	for _, v := range raw {
 		value := v.(map[interface{}]interface{})
 		if name != "" && name != value["name"] {
@@ -149,8 +149,8 @@ func parseChannels(raw []interface{}, name string) ([]channelConf, error) {
 	return ccs, nil
 }
 
-func parseOneChannel(raw map[interface{}]interface{}) (channelConf, error) {
-	var cc channelConf
+func parseOneChannel(raw map[interface{}]interface{}) (ChannelConf, error) {
+	var cc ChannelConf
 	for k, v := range raw {
 		switch k {
 		case "name":
