@@ -328,7 +328,7 @@ func (conn *Connection) ActionLoop() {
 				}
 			}
 		case msg := <-conn.pread:
-			go action.Action(msg, conn)
+			action.Action(msg, conn)
 			for _, v := range conn.Plugins {
 				go v.Action(msg, conn)
 			}
