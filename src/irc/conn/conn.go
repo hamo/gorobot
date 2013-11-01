@@ -21,6 +21,12 @@ const (
 	ConnAuthNickServ
 )
 
+const (
+	defaultPwriteVolume = 4
+	defaultPwriteUrgentVolume = 1
+	defaultPreadVolume = 1
+)
+
 type Connection struct {
 	conf *conf.ConnConf
 
@@ -174,9 +180,9 @@ func (conn *Connection) Connect() (err error) {
 func (conn *Connection) initConn() {
 	conn.CurrentNick = conn.conf.Nick
 
-	conn.pwrite = make(chan string, 64)
-	conn.pwriteUrgent = make(chan string, 1)
-	conn.pread = make(chan *proto.Message, 64)
+	conn.pwrite = make(chan string, defaultPwriteVolume)
+	conn.pwriteUrgent = make(chan string, defaultPwriteUrgentVolume)
+	conn.pread = make(chan *proto.Message, defaultPreadVolume)
 
 	conn.syncReader = make(chan bool)
 	conn.syncWriter = make(chan bool)
