@@ -3,12 +3,14 @@ package plugin
 import (
 	"irc"
 	"irc/proto"
+	"sync"
 	"utils"
 )
 
 type adminStruct struct {
 	passwd        string
 	adminVerified map[string]bool
+	lock          sync.Mutex
 }
 
 func init() {
@@ -55,7 +57,9 @@ func (as *adminStruct) Action(msg *proto.Message, conn irc.ConnInterface) {
 				} else {
 					// only allow VERIFY message
 					if command[0] == "verify" && command[1] == as.passwd {
+						as.lock.Lock()
 						as.adminVerified[msg.Nick] = true
+						as.lock.Unlock()
 						conn.Privmsg(msg.Nick, "VERIFIED")
 					}
 				}
@@ -65,7 +69,9 @@ func (as *adminStruct) Action(msg *proto.Message, conn irc.ConnInterface) {
 		}
 	case "QUIT":
 		if _, ok := as.adminVerified[msg.Nick]; ok {
+			as.lock.Lock()
 			as.adminVerified[msg.Nick] = false
+			as.lock.Lock()
 		}
 	default:
 	}

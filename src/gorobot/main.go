@@ -73,7 +73,7 @@ func main() {
 		}
 
 		println("Post connect to server")
-		go c.PostConnect()
+		c.PostConnect()
 	}
 
 	for {
