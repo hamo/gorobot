@@ -38,8 +38,9 @@ type Connection struct {
 
 	Socket *textproto.Conn
 
-	pwrite chan string
-	pread  chan *proto.Message
+	pwrite       chan string
+	pwriteUrgent chan string
+	pread        chan *proto.Message
 
 	//	output, debug *log.Logger
 
@@ -174,6 +175,7 @@ func (conn *Connection) initConn() {
 	conn.CurrentNick = conn.conf.Nick
 
 	conn.pwrite = make(chan string, 64)
+	conn.pwriteUrgent = make(chan string, 1)
 	conn.pread = make(chan *proto.Message, 64)
 
 	conn.syncReader = make(chan bool)
@@ -188,6 +190,7 @@ func (conn *Connection) initConn() {
 
 func (conn *Connection) closeConn() {
 	close(conn.pwrite)
+	close(conn.pwriteUrgent)
 	close(conn.pread)
 
 	close(conn.syncReader)
@@ -298,6 +301,8 @@ func (conn *Connection) PingLoop() {
 func (conn *Connection) WriteLoop() {
 	for {
 		select {
+		case msg := <-conn.pwriteUrgent:
+			conn.Socket.PrintfLine("%s", msg)
 		case msg := <-conn.pwrite:
 			conn.Socket.PrintfLine("%s", msg)
 		case sync := <-conn.syncWriter:
@@ -351,11 +356,11 @@ func (conn *Connection) Part(channel string) {
 }
 
 func (conn *Connection) Ping(time string) {
-	conn.pwrite <- fmt.Sprintf("PING %s", time)
+	conn.pwriteUrgent <- fmt.Sprintf("PING %s", time)
 }
 
 func (conn *Connection) Pong(time string) {
-	conn.pwrite <- fmt.Sprintf("PONG %s", time)
+	conn.pwriteUrgent <- fmt.Sprintf("PONG %s", time)
 }
 
 func (conn *Connection) Notice(target, message string) {
@@ -363,7 +368,7 @@ func (conn *Connection) Notice(target, message string) {
 }
 
 func (conn *Connection) Privmsg(target, message string) {
-	conn.pwrite <- fmt.Sprintf("PRIVMSG %s :%s", target, message)
+	conn.pwriteUrgent <- fmt.Sprintf("PRIVMSG %s :%s", target, message)
 }
 
 func (conn *Connection) User(user, host, server, realname string) {
