@@ -24,7 +24,7 @@ const (
 const (
 	defaultPwriteVolume = 4
 	defaultPwriteUrgentVolume = 1
-	defaultPreadVolume = 1
+	defaultPreadVolume = 16
 )
 
 type Connection struct {
