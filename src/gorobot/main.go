@@ -14,7 +14,10 @@ import (
 var (
 	confDir   = flag.String("config", "conf", "config dir")
 	debug     = flag.Bool("debug", true, "debug switch")
-	threadNum = flag.Int("threadNum", runtime.NumCPU()+1, "thread number")
+
+//	FIXME: We need many co-run goroutines to make real-time reaction, set default GOMAXPROCS to 64
+//	threadNum = flag.Int("threadNum", runtime.NumCPU()+1, "thread number")
+	threadNum = flag.Int("threadNum", 64, "thread number")
 )
 
 var (
@@ -82,6 +85,7 @@ func main() {
 			case err := <-c.Error:
 				panic(err.Err)
 			default:
+				runtime.Gosched()
 			}
 		}
 	}
